@@ -1,0 +1,60 @@
+name: public-checks
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate the source template
+        if: github.repository == 'ja-godfrey/accelerate-data-takehome'
+        run: |
+          python - << 'EOF'
+          from pathlib import Path
+
+          required = [
+              "README.md", "output_spec.md", "vendor_feeds.md", "pipeline.py",
+              "get_data.py", "checks/public_checks.py", "sample/landing",
+              "sample/reference/school_crosswalk.csv",
+          ]
+          missing = [path for path in required if not Path(path).exists()]
+          assert not missing, f"missing template paths: {missing}"
+
+          for path in ("pipeline.py", "get_data.py", "checks/public_checks.py"):
+              compile(Path(path).read_text(encoding="utf-8"), path, "exec")
+
+          forbidden = ["full", "outputs", "quarantine", "score.json", "_full_data.zip"]
+          present = [path for path in forbidden if Path(path).exists()]
+          assert not present, f"generated artifacts committed: {present}"
+          print("Template scaffold and candidate-facing assets are intact.")
+          EOF
+      - name: Install dependencies (if any)
+        if: github.repository != 'ja-godfrey/accelerate-data-takehome'
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Scoring uses our own copy of the checker, so editing checks/ or this
+        # workflow changes nothing except your own local feedback.
+      - name: Run public checks on the sample data
+        if: github.repository != 'ja-godfrey/accelerate-data-takehome'
+        run: python checks/public_checks.py --data sample --json score.json
+      - name: Write check summary
+        if: always() && github.repository != 'ja-godfrey/accelerate-data-takehome'
+        run: |
+          if [ -f score.json ]; then
+            python - << 'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          s = json.load(open("score.json"))
+          print(f"## Public checks: {s['passed']}/{s['of']} passed  -  conformance tier: {s['tier']}")
+          print()
+          print("| check | result | detail |")
+          print("|---|---|---|")
+          for c in s["checks"]:
+              print(f"| {c['name']} | {'pass' if c['ok'] else 'FAIL'} | {c['detail']} |")
+          print()
+          print("These confirm your output fits the contract - not that it is correct.")
+          print("Correctness, runtime, and edge cases are scored on the hidden set after you submit.")
+          EOF
+          fi

@@ -1,0 +1,8 @@
+# Code stays LF across platforms; never rewrite line endings or re-encode the
+# synthetic data files (one is Windows-1252, one is JSONL) — they must clone
+# byte-for-byte so pipelines and idempotency behave identically everywhere.
+* text=auto eol=lf
+sample/** -text
+*.csv -text
+*.psv -text
+*.jsonl -text

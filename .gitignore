@@ -1,0 +1,17 @@
+full/
+outputs/
+quarantine/
+score.json
+_full_data.zip
+*.bundle
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+.venv/
+venv/
+node_modules/
+.DS_Store
