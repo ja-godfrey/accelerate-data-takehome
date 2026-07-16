@@ -56,25 +56,6 @@ outputs honor the interface.
   runtime. The discovery bonus rewards real anomalies you log in
   `dq_findings.csv`. **Hardcoding to the sample or full data will show here.**
 
-  The hidden score is deliberately split so one production-scale failure does
-  not erase everything else. A compact, incident-complete hidden set scores
-  cell accuracy, incident handling, idempotency, the PII gate, and discovery
-  findings (**70/75 pipeline points**). A separate full-scale run is worth
-  **5 runtime points**. A timeout there loses those runtime points only.
-
-The pipeline is worth 75 points. Your code, memo, and the engineering judgment
-you demonstrate in the follow-up conversation are reviewed separately (25 points).
-
-| Tier | Meaning |
-|---|---|
-| Bronze | runs end-to-end, outputs match the contract schema |
-| Silver | + idempotent re-runs, clean PII scan, well-formed quarantine/findings |
-| Gold | + holds up on the hidden set (weighted cell accuracy >= 90%) |
-| Platinum | + fast runtime and real discoveries in your findings |
-
-Aim for Bronze first, then climb. A careful Silver beats a broken Platinum
-attempt.
-
 ## Ground rules
 
 - **Time limit: ~3 focused hours.** The task is deliberately bigger than the
